@@ -143,8 +143,6 @@ app.use('/api/avatar', require('./src/routes/shop'));
 
 // 레거시 API (호환성 유지)
 app.use('/api/task', require('./src/routes/task')); // 기존 호환성
-app.use('/api/reminder', require('./src/routes/reminder')); // 기존 호환성
-app.use('/api/analysis', require('./src/routes/analysis')); // 기존 호환성
 app.use('/api/customization', require('./src/routes/customization')); // 기존 호환성
 
 /**
