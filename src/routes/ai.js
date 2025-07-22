@@ -44,9 +44,13 @@ router.post('/goals', authenticateToken, async (req, res) => {
 
     const breakdown = await aiGoalService.breakdownGoal(goalData);
     
-    logger.info(`AI 목표 세분화 완료`, { userId, taskCount: breakdown.tasks?.length || 0 });
+    // 고유한 목표 ID 생성
+    const goalId = `goal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    logger.info(`AI 목표 세분화 완료`, { userId, goalId, taskCount: breakdown.tasks?.length || 0 });
 
     res.json({
+      goalId: goalId,
       status: 'completed',
       goal: goal,
       period: period,
@@ -219,33 +223,60 @@ router.post('/schedule', authenticateToken, async (req, res) => {
 // 10.5 루틴 추천
 router.post('/routine', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     
     logger.info(`AI 루틴 추천 요청`, { userId });
 
-    const routines = await aiService.generateRoutineRecommendations(userId);
+    // 사용자 데이터 구성 (임시)
+    const userData = {
+      userId: userId,
+      stats: {
+        totalSessions: 10,
+        totalFocusTime: 500,
+        averageFocusTime: 25,
+        completionRate: 75,
+        totalDays: 7
+      },
+      patterns: {
+        optimalTime: { hour: 9 },
+        productiveDays: ['월요일', '화요일', '수요일']
+      },
+      goals: []
+    };
+
+    const routineRecommendation = await aiService.generateRoutineRecommendation(userData);
     
     logger.info(`AI 루틴 추천 완료`, { userId });
 
-    res.json({
-      routines: routines || [
-        {
-          title: "아침 루틴",
-          tasks: ["물 마시기", "스트레칭", "계획 세우기"],
-          estimatedTime: 30
-        },
-        {
-          title: "집중 루틴", 
-          tasks: ["환경 정리", "목표 설정", "타이머 시작"],
-          estimatedTime: 15
-        }
-      ]
-    });
+    // AI 추천이 성공했으면 그 결과를, 실패했으면 기본 루틴 반환
+    if (routineRecommendation && routineRecommendation.success) {
+      res.json({
+        recommendation: routineRecommendation.recommendation,
+        type: routineRecommendation.type,
+        confidence: routineRecommendation.confidence,
+        generatedAt: routineRecommendation.generatedAt
+      });
+    } else {
+      res.json({
+        routines: [
+          {
+            title: "아침 루틴",
+            tasks: ["물 마시기", "스트레칭", "계획 세우기"],
+            estimatedTime: 30
+          },
+          {
+            title: "집중 루틴", 
+            tasks: ["환경 정리", "목표 설정", "타이머 시작"],
+            estimatedTime: 15
+          }
+        ]
+      });
+    }
 
   } catch (error) {
     logger.error('AI 루틴 추천 실패', { 
       error: error.message, 
-      userId: req.user?.userId 
+      userId: req.user?._id 
     });
     
     res.status(500).json({
@@ -257,7 +288,7 @@ router.post('/routine', authenticateToken, async (req, res) => {
 // 10.6 동기부여 메시지
 router.post('/motivation', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { context } = req.body;
     
     logger.info(`AI 동기부여 메시지 요청`, { userId, context });
@@ -279,7 +310,7 @@ router.post('/motivation', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('AI 동기부여 메시지 생성 실패', { 
       error: error.message, 
-      userId: req.user?.userId 
+      userId: req.user?._id 
     });
     
     res.status(500).json({
@@ -291,7 +322,7 @@ router.post('/motivation', authenticateToken, async (req, res) => {
 // 10.7 목표 진행률 분석
 router.get('/goals/:goalId/analysis', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { goalId } = req.params;
     
     logger.info(`AI 목표 진행률 분석 요청`, { userId, goalId });
@@ -305,7 +336,7 @@ router.get('/goals/:goalId/analysis', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('AI 목표 진행률 분석 실패', { 
       error: error.message, 
-      userId: req.user?.userId,
+      userId: req.user?._id,
       goalId: req.params.goalId 
     });
     
@@ -318,7 +349,7 @@ router.get('/goals/:goalId/analysis', authenticateToken, async (req, res) => {
 // 10.8 AI 시스템 상태 확인
 router.get('/health', authenticateToken, async (req, res) => {
   try {
-    logger.info(`AI 시스템 상태 확인 요청`, { userId: req.user.userId });
+    logger.info(`AI 시스템 상태 확인 요청`, { userId: req.user._id });
 
     const health = await aiService.checkHealth();
     
@@ -333,7 +364,7 @@ router.get('/health', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('AI 시스템 상태 확인 실패', { 
       error: error.message, 
-      userId: req.user?.userId 
+      userId: req.user?._id 
     });
     
     res.status(500).json({

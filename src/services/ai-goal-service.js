@@ -433,6 +433,118 @@ class AIGoalService {
       throw error;
     }
   }
+
+  /**
+   * AI 목표 진행률 분석 (라우터에서 호출)
+   */
+  async analyzeGoalProgress(userId, goalId) {
+    try {
+      logger.info(`목표 진행률 분석 요청`, { userId, goalId });
+
+      // 임시 데이터 - 실제로는 데이터베이스에서 목표 정보를 조회해야 함
+      const mockGoalData = {
+        goalId: goalId,
+        title: "토익 900점 달성하기",
+        startDate: "2025-07-22",
+        targetDate: "2025-10-22",
+        progress: 35,
+        completedTasks: 7,
+        totalTasks: 20,
+        timeSpent: 850,
+        focusTime: 650,
+        averageDaily: 25,
+        streakDays: 5,
+        difficulties: ["어휘 암기 어려움", "리스닝 속도 따라가기 힘듦"],
+        achievements: ["문법 기초 완료", "매일 학습 습관 형성"],
+        satisfaction: "보통"
+      };
+
+      const systemPrompt = `당신은 FIVLO 앱의 AI 어시스턴트 "오분이"입니다. 사용자의 목표 달성 진행 상황을 분석하고 구체적인 개선 방안을 제안해주세요.
+
+응답 형식:
+{
+  "summary": "진행 상황 요약",
+  "progressAnalysis": "상세 분석",
+  "strengths": ["잘하고 있는 점들"],
+  "challenges": ["개선이 필요한 부분들"], 
+  "recommendations": ["구체적인 개선 제안"],
+  "nextMilestones": ["다음 단계 목표들"],
+  "motivationalMessage": "격려 메시지",
+  "estimatedCompletion": "예상 완료 시기"
+}`;
+
+      const userMessage = `
+목표: ${mockGoalData.title}
+시작일: ${mockGoalData.startDate}
+목표일: ${mockGoalData.targetDate}
+현재 진행률: ${mockGoalData.progress}%
+완료된 작업: ${mockGoalData.completedTasks}/${mockGoalData.totalTasks}
+총 투입 시간: ${mockGoalData.timeSpent}분
+평균 일일 학습: ${mockGoalData.averageDaily}분
+연속 달성: ${mockGoalData.streakDays}일
+어려웠던 점: ${mockGoalData.difficulties.join(', ')}
+달성한 것: ${mockGoalData.achievements.join(', ')}
+만족도: ${mockGoalData.satisfaction}
+
+진행 상황을 분석하고 앞으로의 개선 방향을 제시해주세요.`;
+
+      let result;
+      try {
+        result = await this.callOpenAI(systemPrompt, userMessage);
+      } catch (error) {
+        // OpenAI 실패 시 폴백 분석 제공
+        result = this.generateFallbackAnalysis(mockGoalData);
+      }
+
+      // 추가 메타데이터
+      result.goalId = goalId;
+      result.userId = userId;
+      result.analysisDate = new Date();
+      result.progressPercentage = mockGoalData.progress;
+      result.completionRate = Math.round((mockGoalData.completedTasks / mockGoalData.totalTasks) * 100);
+
+      logger.info(`목표 진행률 분석 완료`, { userId, goalId, progress: mockGoalData.progress });
+      
+      return result;
+
+    } catch (error) {
+      logger.error('목표 진행률 분석 실패:', error, { userId, goalId });
+      throw error;
+    }
+  }
+
+  /**
+   * AI 분석 실패 시 기본 분석 제공
+   */
+  generateFallbackAnalysis(goalData) {
+    return {
+      summary: `현재 "${goalData.title}" 목표의 진행률은 ${goalData.progress}%입니다. ${goalData.streakDays}일 연속으로 꾸준히 진행하고 계시네요!`,
+      progressAnalysis: `총 ${goalData.totalTasks}개 작업 중 ${goalData.completedTasks}개를 완료하여 ${Math.round((goalData.completedTasks/goalData.totalTasks)*100)}%의 완료율을 보이고 있습니다. 하루 평균 ${goalData.averageDaily}분씩 투자하여 총 ${goalData.timeSpent}분을 학습에 투입하셨습니다.`,
+      strengths: [
+        "꾸준한 학습 습관이 잘 형성되어 있습니다",
+        "매일 일정한 시간을 투자하고 계십니다", 
+        "연속 달성 기록을 유지하고 있습니다"
+      ],
+      challenges: [
+        "학습 속도를 조금 더 높일 필요가 있습니다",
+        "어려운 부분에 대한 전략적 접근이 필요합니다",
+        "목표 달성을 위한 시간 투자량 증가 검토"
+      ],
+      recommendations: [
+        "포모도로 세션을 하루 1-2개 더 추가해보세요",
+        "어려운 부분은 작은 단위로 나누어 접근하세요",
+        "주간 복습 시간을 따로 확보해보세요",
+        "진행 상황을 시각적으로 확인할 수 있도록 기록하세요"
+      ],
+      nextMilestones: [
+        "다음 주까지 50% 진행률 달성",
+        "어휘 학습 전략 수립 및 실행",
+        "모의 테스트 1회 실시"
+      ],
+      motivationalMessage: "🌟 벌써 ${goalData.progress}%나 진행하셨네요! 꾸준함이 가장 큰 힘입니다. 오분이가 끝까지 응원할게요!",
+      estimatedCompletion: "현재 속도로 진행하면 약 ${Math.ceil((100-goalData.progress)/5)}주 후 목표 달성 가능합니다"
+    };
+  }
 }
 
 module.exports = new AIGoalService();
