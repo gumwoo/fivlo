@@ -28,7 +28,7 @@ const logger = require('../utils/logger');
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { date } = req.query;
     
     logger.info(`Task 목록 조회 요청`, { 
@@ -87,7 +87,7 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.get('/calendar/:year/:month', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { year, month } = req.params;
     
     logger.info(`캘린더 데이터 조회 요청`, { 
@@ -155,7 +155,7 @@ router.get('/calendar/:year/:month', authenticateToken, async (req, res) => {
  */
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const taskData = req.body;
     
     logger.info(`Task 생성 요청`, { 
@@ -220,7 +220,7 @@ router.post('/', authenticateToken, async (req, res) => {
  */
 router.patch('/:taskId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { taskId } = req.params;
     const updateData = req.body;
     
@@ -275,7 +275,7 @@ router.patch('/:taskId', authenticateToken, async (req, res) => {
  */
 router.delete('/:taskId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { taskId } = req.params;
     const { deleteAll } = req.query; // 반복 Task 전체 삭제 여부
     
@@ -336,7 +336,7 @@ router.delete('/:taskId', authenticateToken, async (req, res) => {
  */
 router.put('/:taskId/complete', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { taskId } = req.params;
     
     logger.info(`Task 완료 처리 요청`, { userId, taskId });
@@ -414,7 +414,7 @@ router.put('/:taskId/complete', authenticateToken, async (req, res) => {
  */
 router.get('/categories', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     
     logger.info(`카테고리 목록 조회 요청`, { userId });
 
@@ -452,7 +452,7 @@ router.get('/categories', authenticateToken, async (req, res) => {
  */
 router.post('/categories', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { name, color } = req.body;
     
     logger.info(`카테고리 생성 요청`, { userId, name, color });
@@ -502,7 +502,7 @@ router.post('/categories', authenticateToken, async (req, res) => {
  */
 router.post('/albums', authenticateToken, upload, processImage, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { taskId, memo } = req.body;
     const imageInfo = req.imageInfo;
     
@@ -566,7 +566,7 @@ router.post('/albums', authenticateToken, upload, processImage, async (req, res)
  */
 router.get('/albums', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { view = 'calendar', year, month, categoryId } = req.query;
     
     logger.info(`성장앨범 목록 조회 요청`, { 

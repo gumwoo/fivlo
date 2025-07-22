@@ -125,8 +125,7 @@ app.use('/api/time-attack', require('./src/routes/timeAttack'));
 
 // Task 관리 & 성장앨범 API (새로운 버전)
 app.use('/api/tasks', require('./src/routes/task'));
-app.use('/api/categories', require('./src/routes/task'));
-app.use('/api/albums', require('./src/routes/task'));
+app.use('/api/categories', require('./src/routes/category'));
 
 // 망각방지 알림 API (새로운 버전)
 app.use('/api/reminders', require('./src/routes/reminders'));
