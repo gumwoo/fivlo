@@ -1,0 +1,354 @@
+{
+  "tasks": [
+    {
+      "id": "7babcc6a-eb45-44f5-bc8a-004e2af3f4ef",
+      "name": "프로젝트 기본 구조 및 환경 설정",
+      "description": "FIVLO 백엔드 프로젝트의 기본 디렉토리 구조를 생성하고 필요한 패키지를 설치합니다. Express 서버 기본 설정과 환경변수 관리를 구축합니다.",
+      "notes": "포트는 5000번 사용, CORS 설정 포함, 개발용 nodemon 설정",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T04:52:01.534Z",
+      "relatedFiles": [
+        {
+          "path": "package.json",
+          "type": "CREATE",
+          "description": "프로젝트 의존성 및 스크립트 정의"
+        },
+        {
+          "path": "server.js",
+          "type": "CREATE",
+          "description": "메인 Express 서버 파일"
+        },
+        {
+          "path": ".env",
+          "type": "CREATE",
+          "description": "환경변수 설정 파일"
+        },
+        {
+          "path": "src/config/database.js",
+          "type": "CREATE",
+          "description": "데이터베이스 연결 설정"
+        },
+        {
+          "path": "src/utils/logger.js",
+          "type": "CREATE",
+          "description": "Winston 로깅 설정"
+        },
+        {
+          "path": "docs/project_plan.md",
+          "type": "CREATE",
+          "description": "프로젝트 계획 문서"
+        }
+      ],
+      "implementationGuide": "1. package.json 생성 및 필요 의존성 설치: express, mongoose, jsonwebtoken, bcrypt, cors, dotenv, winston, multer 등\\n2. 프로젝트 디렉토리 구조 생성: src/, docs/, logs/ 폴더\\n3. 기본 Express 서버 설정 (server.js)\\n4. 환경변수 파일 (.env) 템플릿 생성\\n5. 로깅 시스템 기본 설정",
+      "verificationCriteria": "npm run dev 실행시 서버가 포트 5000에서 정상 구동되고, 기본 라우트 접근 가능, 로그 파일이 logs/ 폴더에 정상 생성",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "FIVLO 백엔드 프로젝트의 기본 구조와 환경 설정을 성공적으로 완료했습니다. Express 서버가 포트 5000에서 정상 구동되고 있으며, MongoDB와 Redis 연결이 모두 성공했습니다. 프로젝트 디렉토리 구조, Winston 로깅 시스템, 환경변수 관리, 보안 미들웨어 설정이 모두 구축되었고, 개발 환경이 완전히 준비되었습니다.",
+      "completedAt": "2025-07-19T04:52:01.532Z"
+    },
+    {
+      "id": "147c0b2a-8cb3-437d-9ce9-955a28340a88",
+      "name": "사용자 인증 시스템 구축",
+      "description": "JWT 기반 인증과 Google/Apple 소셜 로그인을 구현합니다. 사용자 모델과 인증 미들웨어를 개발합니다.",
+      "notes": "유료/무료 사용자 구분 로직 포함, 테스트 계정 생성 기능",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "7babcc6a-eb45-44f5-bc8a-004e2af3f4ef"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:00:40.058Z",
+      "relatedFiles": [
+        {
+          "path": "src/models/User.js",
+          "type": "CREATE",
+          "description": "사용자 데이터 모델"
+        },
+        {
+          "path": "src/routes/auth.js",
+          "type": "CREATE",
+          "description": "인증 관련 API 라우트"
+        },
+        {
+          "path": "src/middleware/auth.js",
+          "type": "CREATE",
+          "description": "JWT 인증 미들웨어"
+        },
+        {
+          "path": "src/services/authService.js",
+          "type": "CREATE",
+          "description": "인증 비즈니스 로직"
+        },
+        {
+          "path": "src/utils/jwt.js",
+          "type": "CREATE",
+          "description": "JWT 토큰 유틸리티"
+        }
+      ],
+      "implementationGuide": "1. User 스키마 설계: id, email, socialId, userType, isPremium, coins, createdAt\\n2. JWT 토큰 생성/검증 유틸리티 구현\\n3. Google OAuth 2.0 연동 (passport-google-oauth20)\\n4. Apple OAuth 연동 (apple-auth)\\n5. 인증 미들웨어 구현 (토큰 검증, 권한 체크)\\n6. /api/auth 라우터 구현: 로그인, 회원가입, 토큰 갱신",
+      "verificationCriteria": "소셜 로그인 및 이메일 로그인 정상 동작, JWT 토큰 생성/검증 성공, 테스트 계정으로 로그인 가능",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "사용자 인증 시스템을 성공적으로 구축했습니다. JWT 기반 인증, Google/Apple 소셜 로그인 API, 유료/무료 사용자 구분 로직, 테스트 계정 생성 기능이 모두 완료되었습니다. User 모델에는 프리미엄 구독, 코인 시스템, 알림 설정 등 FIVLO 앱의 모든 요구사항이 반영되었고, 인증 미들웨어와 서비스 로직이 완전히 구현되어 다음 단계 개발을 위한 견고한 기반이 마련되었습니다.",
+      "completedAt": "2025-07-19T05:00:40.056Z"
+    },
+    {
+      "id": "c0b1f9ca-61d7-4ebf-a309-47b592eec2bb",
+      "name": "포모도로 타이머 시스템 개발",
+      "description": "25분 집중 + 5분 휴식 사이클의 포모도로 타이머를 구현합니다. 목표별 색상 구분과 통계 수집 기능을 포함합니다.",
+      "notes": "실시간 타이머 상태 동기화, 백그라운드에서 세션 관리",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "147c0b2a-8cb3-437d-9ce9-955a28340a88"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:10:23.884Z",
+      "relatedFiles": [
+        {
+          "path": "src/models/PomodoroSession.js",
+          "type": "CREATE",
+          "description": "포모도로 세션 데이터 모델"
+        },
+        {
+          "path": "src/routes/pomodoro.js",
+          "type": "CREATE",
+          "description": "포모도로 관련 API 라우트"
+        },
+        {
+          "path": "src/services/pomodoroService.js",
+          "type": "CREATE",
+          "description": "포모도로 비즈니스 로직"
+        },
+        {
+          "path": "src/utils/timer.js",
+          "type": "CREATE",
+          "description": "타이머 유틸리티 함수"
+        }
+      ],
+      "implementationGuide": "1. PomodoroSession 스키마: userId, goal, color, duration, type(focus/break), startTime, endTime\\n2. 포모도로 상태 관리 (Redis 캐싱 활용)\\n3. /api/pomodoro 라우터: 세션 시작/중지/완료, 상태 조회\\n4. 집중 목표별 색상 설정 기능\\n5. 유료 사용자 코인 지급 로직 (1일 1회 제한)\\n6. 세션 통계 데이터 수집",
+      "verificationCriteria": "포모도로 세션 시작/중지/완료 정상 동작, 색상별 목표 관리 가능, 유료 사용자 코인 지급 확인",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "포모도로 타이머 시스템을 성공적으로 구축했습니다. 25분 집중 + 5분 휴식 사이클, 목표별 색상 구분, 실시간 상태 관리, 유료 사용자 코인 지급 시스템(1일 1회)이 모두 완료되었습니다. PomodoroSession 모델로 세션 상태를 완벽하게 추적하고, TimerUtils로 시간 계산과 색상 관리를 효율적으로 처리하며, 포모도로 서비스에서 비즈니스 로직을 체계적으로 관리합니다. API 엔드포인트를 통해 세션 생성/시작/완료/통계 조회가 모두 가능하며, PDF 명세의 모든 포모도로 요구사항이 충족되었습니다.",
+      "completedAt": "2025-07-19T05:10:23.883Z"
+    },
+    {
+      "id": "5a4a3b71-2170-422c-8046-ec62be782848",
+      "name": "Task 관리 및 성장앨범 시스템",
+      "description": "캘린더 형태의 할일 관리와 사진 연동 성장앨범 기능을 구현합니다. 카테고리별 색상 구분과 반복 설정을 지원합니다.",
+      "notes": "기본 카테고리 '일상' 자동 생성, 매일 반복 로직 구현",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "147c0b2a-8cb3-437d-9ce9-955a28340a88"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:24:51.439Z",
+      "relatedFiles": [
+        {
+          "path": "src/models/Task.js",
+          "type": "CREATE",
+          "description": "Task 데이터 모델"
+        },
+        {
+          "path": "src/models/Category.js",
+          "type": "CREATE",
+          "description": "카테고리 데이터 모델"
+        },
+        {
+          "path": "src/models/GrowthAlbum.js",
+          "type": "CREATE",
+          "description": "성장앨범 데이터 모델"
+        },
+        {
+          "path": "src/routes/task.js",
+          "type": "CREATE",
+          "description": "Task 관련 API 라우트"
+        },
+        {
+          "path": "src/services/taskService.js",
+          "type": "CREATE",
+          "description": "Task 비즈니스 로직"
+        },
+        {
+          "path": "src/middleware/upload.js",
+          "type": "CREATE",
+          "description": "이미지 업로드 미들웨어"
+        }
+      ],
+      "implementationGuide": "1. Task 스키마: userId, title, category, date, isCompleted, isRepeating, hasGrowthAlbum, color\\n2. Category 스키마: name, color, userId\\n3. GrowthAlbum 스키마: taskId, imageUrl, memo, createdAt\\n4. /api/task 라우터: CRUD, 완료 처리, 반복 설정\\n5. 이미지 업로드 (Multer + Sharp)\\n6. 캘린더 데이터 조회 API",
+      "verificationCriteria": "Task CRUD 정상 동작, 카테고리별 색상 구분 적용, 성장앨범 사진 업로드 및 조회 가능",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "Task 관리 및 성장앨범 시스템을 성공적으로 완료했습니다. Category, Task, GrowthAlbum 데이터 모델과 이미지 업로드 미들웨어, 비즈니스 로직, API 라우터까지 모든 단계가 구현되었습니다. 캘린더 형태의 할일 관리, 카테고리별 색상 구분, 반복 설정, 완료 시 코인 지급, 성장앨범 사진 업로드 기능이 모두 포함되어 있습니다.",
+      "completedAt": "2025-07-19T05:24:51.438Z"
+    },
+    {
+      "id": "e12294be-4565-4c22-bab4-61c9eacbe784",
+      "name": "망각방지 알림 시스템 구현",
+      "description": "시간 기반 알림과 GPS 위치 기반 알림을 구현합니다. 유료 사용자 전용 장소 설정 기능을 포함합니다.",
+      "notes": "무료 사용자는 시간 알림만, 유료 사용자는 위치 알림 추가",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "147c0b2a-8cb3-437d-9ce9-955a28340a88"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:38:45.530Z",
+      "relatedFiles": [
+        {
+          "path": "src/models/Reminder.js",
+          "type": "CREATE",
+          "description": "알림 데이터 모델"
+        },
+        {
+          "path": "src/routes/reminder.js",
+          "type": "CREATE",
+          "description": "알림 관련 API 라우트"
+        },
+        {
+          "path": "src/services/reminderService.js",
+          "type": "CREATE",
+          "description": "알림 비즈니스 로직"
+        },
+        {
+          "path": "src/services/notificationService.js",
+          "type": "CREATE",
+          "description": "푸시 알림 서비스"
+        },
+        {
+          "path": "src/utils/scheduler.js",
+          "type": "CREATE",
+          "description": "스케줄링 유틸리티"
+        }
+      ],
+      "implementationGuide": "1. Reminder 스키마: userId, title, time, days, location, radius, isActive\\n2. /api/reminder 라우터: 알림 설정 CRUD\\n3. 스케줄링 시스템 (node-cron)\\n4. GPS 기반 위치 알림 (유료 기능)\\n5. 푸시 알림 발송 시스템\\n6. 알림 완료 체크 및 코인 지급",
+      "verificationCriteria": "시간 기반 알림 정상 발송, 유료 사용자 GPS 알림 동작, 체크 완료시 코인 지급 확인",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "망각방지 알림 시스템을 성공적으로 구현했습니다. Reminder 데이터 모델, 시간 기반 알림(무료/유료 공통), GPS 위치 기반 알림(유료 전용), 푸시 알림 서비스, node-cron 기반 스케줄링 시스템, 알림 완료 체크 및 코인 지급 로직, API 라우터가 모두 완성되었습니다. PDF 명세에 따른 유료/무료 사용자 구분과 요일별 반복 설정 기능도 포함되어 있습니다.",
+      "completedAt": "2025-07-19T05:38:45.524Z"
+    },
+    {
+      "id": "72a855dc-5b26-46b0-a8e7-a0616e236f84",
+      "name": "집중도 분석 및 통계 시스템",
+      "description": "포모도로 데이터를 기반으로 일/주/월/D-Day 통계를 생성합니다. AI 루틴 제안 기능을 포함합니다.",
+      "notes": "포모도로 세션 데이터 기반 통계, 실시간 계산 vs 배치 처리 고려",
+      "status": "completed",
+      "dependencies": [
+        {
+          "taskId": "c0b1f9ca-61d7-4ebf-a309-47b592eec2bb"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:47:03.389Z",
+      "relatedFiles": [
+        {
+          "path": "src/routes/analysis.js",
+          "type": "CREATE",
+          "description": "분석 관련 API 라우트"
+        },
+        {
+          "path": "src/services/analysisService.js",
+          "type": "CREATE",
+          "description": "통계 분석 비즈니스 로직"
+        },
+        {
+          "path": "src/services/aiService.js",
+          "type": "CREATE",
+          "description": "AI 서비스 (OpenAI 연동)"
+        },
+        {
+          "path": "src/utils/statistics.js",
+          "type": "CREATE",
+          "description": "통계 계산 유틸리티"
+        }
+      ],
+      "implementationGuide": "1. 통계 계산 서비스 구현\\n2. /api/analysis 라우터: 일간/주간/월간/D-Day 통계\\n3. 집중도 차트 데이터 생성\\n4. AI 루틴 제안 (OpenAI API 연동)\\n5. D-Day 목표 관리 (유료 기능)\\n6. 캐싱을 통한 성능 최적화",
+      "verificationCriteria": "일/주/월 통계 데이터 정상 생성, AI 루틴 제안 동작, D-Day 기능 유료 사용자 전용 접근",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축",
+      "summary": "집중도 분석 및 통계 시스템을 성공적으로 구현했습니다. 포모도로 데이터 기반 일/주/월 통계 분석, D-Day 목표 관리(유료 기능), AI 루틴 제안(OpenAI 연동), 캘린더 히트맵 생성, 성과 분석 및 인사이트 제공, 종합 대시보드 API가 모두 완성되었습니다. 통계 계산 유틸리티와 AI 서비스도 확장 가능하게 구조화되어 있습니다.",
+      "completedAt": "2025-07-19T05:47:03.388Z"
+    },
+    {
+      "id": "c0f8fd7a-4e8e-482a-a871-2796fe5dff6b",
+      "name": "코인 시스템 및 커스터마이징 상점",
+      "description": "코인 시스템과 오분이 커스터마이징 상점을 구현합니다. 아이템 구매 및 착용 기능을 포함합니다.",
+      "notes": "유료 사용자 전용 기능, 코인 거래 로그 관리",
+      "status": "in_progress",
+      "dependencies": [
+        {
+          "taskId": "147c0b2a-8cb3-437d-9ce9-955a28340a88"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T05:47:41.469Z",
+      "relatedFiles": [
+        {
+          "path": "src/models/CoinTransaction.js",
+          "type": "CREATE",
+          "description": "코인 거래 데이터 모델"
+        },
+        {
+          "path": "src/models/ShopItem.js",
+          "type": "CREATE",
+          "description": "상점 아이템 데이터 모델"
+        },
+        {
+          "path": "src/models/UserItem.js",
+          "type": "CREATE",
+          "description": "사용자 보유 아이템 모델"
+        },
+        {
+          "path": "src/routes/shop.js",
+          "type": "CREATE",
+          "description": "상점 관련 API 라우트"
+        },
+        {
+          "path": "src/services/coinService.js",
+          "type": "CREATE",
+          "description": "코인 시스템 비즈니스 로직"
+        }
+      ],
+      "implementationGuide": "1. CoinTransaction 스키마: userId, amount, type, description, createdAt\\n2. ShopItem 스키마: name, price, category, imageUrl, isActive\\n3. UserItem 스키마: userId, itemId, purchasedAt, isEquipped\\n4. /api/shop 라우터: 상점 아이템 조회, 구매\\n5. /api/user/customize 라우터: 착용 아이템 관리\\n6. 코인 적립/차감 로직",
+      "verificationCriteria": "상점 아이템 조회 가능, 코인으로 아이템 구매 성공, 착용 시스템 정상 동작",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축"
+    },
+    {
+      "id": "88190f14-fcca-4d62-8c4c-3ee778fa3e6e",
+      "name": "AI 기반 목표 세분화 서비스",
+      "description": "사용자의 목표를 AI가 분석하여 세부 일정을 추천하는 서비스를 구현합니다.",
+      "notes": "API 키 관리, 응답 파싱 및 에러 처리 중요",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "5a4a3b71-2170-422c-8046-ec62be782848"
+        }
+      ],
+      "createdAt": "2025-07-19T04:31:12.796Z",
+      "updatedAt": "2025-07-19T04:31:12.796Z",
+      "relatedFiles": [
+        {
+          "path": "src/services/aiService.js",
+          "type": "TO_MODIFY",
+          "description": "AI 서비스 확장 (목표 분석 추가)"
+        },
+        {
+          "path": "src/routes/ai.js",
+          "type": "CREATE",
+          "description": "AI 관련 API 라우트"
+        },
+        {
+          "path": "src/utils/promptTemplates.js",
+          "type": "CREATE",
+          "description": "AI 프롬프트 템플릿"
+        }
+      ],
+      "implementationGuide": "1. OpenAI API 연동 설정\\n2. 목표 분석 프롬프트 엔지니어링\\n3. /api/ai/goal-breakdown 라우터\\n4. 반복 일정 vs 기간 설정 일정 구분\\n5. AI 추천 결과를 Task로 변환\\n6. 사용자 수정 기능 지원",
+      "verificationCriteria": "목표 입력시 AI 분석 결과 생성, 세부 일정 추천 정상 동작, Task 생성 연동 확인",
+      "analysisResult": "FIVLO 앱의 완전한 백엔드 시스템을 PDF 디자인 명세에 맞춰 개발. Node.js + Express 기반으로 유료/무료 버전 구분, 코인 시스템, AI 기능, 소셜 로그인, 알림 시스템을 포함한 확장 가능하고 유지보수가 용이한 아키텍처 구축"
+    }
+  ]
+}
