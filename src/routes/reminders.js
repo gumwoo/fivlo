@@ -77,7 +77,7 @@ const logger = require('../utils/logger');
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const isPremium = req.user.subscriptionStatus === 'premium';
     
     logger.info(`망각방지 알림 목록 조회 요청`, { userId, isPremium });
@@ -169,7 +169,7 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const isPremium = req.user.subscriptionStatus === 'premium';
     const { title, time, days, location } = req.body;
     
@@ -274,7 +274,7 @@ router.post('/', authenticateToken, async (req, res) => {
  */
 router.patch('/:reminderId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const isPremium = req.user.subscriptionStatus === 'premium';
     const { reminderId } = req.params;
     const updateData = req.body;
@@ -340,7 +340,7 @@ router.patch('/:reminderId', authenticateToken, async (req, res) => {
  */
 router.delete('/:reminderId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { reminderId } = req.params;
     
     logger.info(`망각방지 알림 삭제 요청`, { userId, reminderId });
@@ -404,30 +404,24 @@ router.delete('/:reminderId', authenticateToken, async (req, res) => {
  */
 router.put('/:reminderId/check', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const isPremium = req.user.subscriptionStatus === 'premium';
     const { reminderId } = req.params;
     
     logger.info(`망각방지 알림 체크 요청`, { userId, reminderId, isPremium });
 
     // 알림 체크 처리
-    await reminderService.checkReminder(userId, reminderId);
+    await reminderService.completeReminder(userId, reminderId);
     
-    // 오늘 모든 알림이 체크되었는지 확인
-    const allRemindersChecked = await reminderService.areAllRemindersCheckedToday(userId);
+    // 오늘 모든 알림이 체크되었는지 확인 및 코인 지급
+    const completionResult = await reminderService.checkDailyReminderCompletion(userId);
     
     let coinEarned = 0;
+    let allRemindersChecked = false;
     
-    // Premium 사용자이고 모든 알림이 체크되었으면 코인 지급
-    if (isPremium && allRemindersChecked) {
-      const today = new Date().toISOString().split('T')[0];
-      const alreadyEarned = await coinService.hasEarnedCoinToday(userId, 'reminder_all_checked');
-      
-      if (!alreadyEarned) {
-        coinEarned = 1;
-        await coinService.earnCoin(userId, 'reminder_all_checked', coinEarned);
-        logger.info(`망각방지 알림 전체 완료 코인 지급`, { userId, coinEarned });
-      }
+    if (completionResult && completionResult.rewarded) {
+      coinEarned = completionResult.amount;
+      allRemindersChecked = true;
     }
     
     logger.info(`망각방지 알림 체크 완료`, { 
@@ -488,7 +482,7 @@ router.put('/:reminderId/check', authenticateToken, async (req, res) => {
  */
 router.get('/stats', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     
     logger.info(`망각방지 알림 통계 조회 요청`, { userId });
 

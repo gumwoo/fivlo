@@ -121,7 +121,7 @@ class TaskService {
 
       // 카테고리 확인 (없으면 기본 카테고리 사용)
       let category;
-      if (categoryId) {
+      if (categoryId && categoryId !== 'CATEGORY_ID_여기에') {
         category = await Category.findOne({ _id: categoryId, userId });
         if (!category) {
           throw new Error('유효하지 않은 카테고리입니다.');
@@ -130,12 +130,7 @@ class TaskService {
         // 기본 카테고리 조회 또는 생성
         category = await Category.findOne({ userId, name: '일상' });
         if (!category) {
-          category = new Category({
-            userId,
-            name: '일상',
-            color: '#9E9E9E' // 기본 회색
-          });
-          await category.save();
+          category = await Category.createDefaultCategory(userId);
         }
       }
 
@@ -510,20 +505,16 @@ class TaskService {
       const growthAlbum = new GrowthAlbum({
         userId,
         taskId,
-        categoryId: task.categoryId,
-        title: task.title,
         imageUrl,
         thumbnailUrl,
         imagePath,
         thumbnailPath,
         imageSize,
         imageType,
-        memo: memo.trim(),
-        date: task.date
+        memo: memo.trim()
       });
 
       await growthAlbum.save();
-      await growthAlbum.populate('categoryId', 'name color');
 
       logger.info(`성장앨범 생성 완료`, { 
         userId, 

@@ -61,7 +61,7 @@ const processImage = async (req, res, next) => {
       return next();
     }
 
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const fileName = generateFileName(userId, req.file.originalname);
     
     // 파일 경로 설정
@@ -120,7 +120,7 @@ const processImage = async (req, res, next) => {
     next();
   } catch (error) {
     logger.error(`이미지 처리 실패: ${error.message}`, {
-      userId: req.user?.userId,
+      userId: req.user?._id,
       fileName: req.file?.originalname
     });
 
@@ -148,7 +148,7 @@ const handleUploadError = (error, req, res, next) => {
     logger.warn('업로드 에러', {
       code: error.code,
       message: error.message,
-      userId: req.user?.userId
+      userId: req.user?._id
     });
 
     return res.status(400).json({

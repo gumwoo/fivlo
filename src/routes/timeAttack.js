@@ -88,7 +88,6 @@ router.post('/sessions',
       });
 
       let sessionData = {
-        userId,
         goal,
         totalMinutes,
         steps: steps || []
@@ -116,7 +115,7 @@ router.post('/sessions',
         };
       }
 
-      const session = await timeAttackService.createSession(sessionData);
+      const session = await timeAttackService.createSession(userId, sessionData);
 
       logger.info('타임어택 세션 생성 성공', { 
         userId, 

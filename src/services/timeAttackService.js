@@ -18,7 +18,7 @@ class TimeAttackService {
 
       const {
         goal,
-        totalTimeMinutes,
+        totalMinutes,
         steps = []
       } = sessionData;
 
@@ -26,15 +26,15 @@ class TimeAttackService {
       let processedSteps = steps;
       if (!steps || steps.length === 0) {
         try {
-          const aiSteps = await aiService.breakdownGoal(goal, totalTimeMinutes);
+          const aiSteps = await aiService.breakdownGoal(goal, totalMinutes);
           processedSteps = aiSteps;
         } catch (aiError) {
           logger.warn('AI 목표 분해 실패, 기본 단계 사용', { error: aiError.message });
           // AI 실패 시 기본 단계 생성
           processedSteps = [
-            { name: '준비하기', duration: Math.floor(totalTimeMinutes * 0.1) },
-            { name: goal, duration: Math.floor(totalTimeMinutes * 0.8) },
-            { name: '마무리하기', duration: Math.floor(totalTimeMinutes * 0.1) }
+            { name: '준비하기', duration: Math.floor(totalMinutes * 0.1) },
+            { name: goal, duration: Math.floor(totalMinutes * 0.8) },
+            { name: '마무리하기', duration: Math.floor(totalMinutes * 0.1) }
           ];
         }
       }
@@ -42,7 +42,7 @@ class TimeAttackService {
       const session = new TimeAttackSession({
         userId,
         goal,
-        totalMinutes: totalTimeMinutes,
+        totalMinutes: totalMinutes,
         steps: processedSteps.map((step, index) => ({
           name: step.name,
           minutes: step.duration || step.minutes,
