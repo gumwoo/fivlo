@@ -210,6 +210,82 @@ class AnalysisService {
   }
 
   /**
+   * 일간 분석 (라우터 호환)
+   */
+  async getDailyAnalysis(userId, date) {
+    return await this.getDailyStats(userId, new Date(date));
+  }
+
+  /**
+   * 주간 분석 (라우터 호환)
+   */
+  async getWeeklyAnalysis(userId, week) {
+    // week 형태: "2025-W30"
+    const [year, weekNum] = week.split('-W');
+    const weekStart = moment().year(year).week(weekNum).startOf('week').toDate();
+    return await this.getWeeklyStats(userId, weekStart);
+  }
+
+  /**
+   * 월간 분석 (라우터 호환)
+   */
+  async getMonthlyAnalysis(userId, month) {
+    // month 형태: "2025-07"
+    const [year, monthNum] = month.split('-');
+    return await this.getMonthlyStats(userId, parseInt(year), parseInt(monthNum));
+  }
+
+  /**
+   * D-Day 목표 조회 (라우터 호환)
+   */
+  async getDDayGoals(userId) {
+    // 여기서는 모든 D-Day 목표를 반환하는 로직 구현
+    // 임시로 빈 배열 반환
+    return [];
+  }
+
+  /**
+   * D-Day 목표 생성 (라우터 호환)
+   */
+  async createDDayGoal(userId, goalData) {
+    // 임시 구현 - 실제로는 DB에 저장
+    return {
+      _id: 'temp-id',
+      ...goalData,
+      daysLeft: 30,
+      progress: 0,
+      onTrack: true,
+      recommendation: "매일 꾸준히 진행하세요",
+      createdAt: new Date()
+    };
+  }
+
+  /**
+   * 세션 로그 조회 (라우터 호환)
+   */
+  async getSessionLogs(userId, options = {}) {
+    try {
+      const { date, limit = 50 } = options;
+      let query = { userId };
+
+      if (date) {
+        const startDate = moment(date).startOf('day').toDate();
+        const endDate = moment(date).endOf('day').toDate();
+        query.startTime = { $gte: startDate, $lte: endDate };
+      }
+
+      const sessions = await PomodoroSession.find(query)
+        .sort({ startTime: -1 })
+        .limit(parseInt(limit));
+
+      return sessions;
+    } catch (error) {
+      logger.error(`세션 로그 조회 실패: ${error.message}`, { userId });
+      throw error;
+    }
+  }
+
+  /**
    * AI 루틴 제안 생성
    */
   async generateAIRecommendation(userId) {

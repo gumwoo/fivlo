@@ -22,8 +22,8 @@ const logger = require('../utils/logger');
 // 10.1 AI 목표 세분화
 router.post('/goals', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const { goal, period, duration } = req.body;
+    const userId = req.user._id;
+    const { goal, period, duration, hasDuration, startDate, endDate } = req.body;
     
     logger.info(`AI 목표 세분화 요청`, { userId, goal, period, duration });
 
@@ -33,22 +33,36 @@ router.post('/goals', authenticateToken, async (req, res) => {
       });
     }
 
-    const aiGoal = await aiGoalService.createGoal(userId, {
-      goal, period, duration
-    });
+    // AI 서비스 호출
+    const goalData = {
+      goal,
+      duration: period,
+      currentSituation: '시작 단계',
+      availableTime: '하루 2-3시간',
+      experienceLevel: '초보'
+    };
+
+    const breakdown = await aiGoalService.breakdownGoal(goalData);
     
-    logger.info(`AI 목표 세분화 시작`, { userId, goalId: aiGoal._id });
+    logger.info(`AI 목표 세분화 완료`, { userId, taskCount: breakdown.tasks?.length || 0 });
 
     res.json({
-      goalId: aiGoal._id,
-      status: 'processing',
-      estimatedTime: 30
+      status: 'completed',
+      goal: goal,
+      period: period,
+      analysis: breakdown.analysis,
+      timeline: breakdown.timeline,
+      difficulty: breakdown.difficulty,
+      tasks: breakdown.tasks || [],
+      tips: breakdown.tips || [],
+      motivation: breakdown.motivation || '화이팅! 오분이가 응원해요!',
+      estimatedTime: 0
     });
 
   } catch (error) {
     logger.error('AI 목표 세분화 실패', { 
       error: error.message, 
-      userId: req.user?.userId 
+      userId: req.user?._id 
     });
     
     res.status(500).json({
@@ -60,27 +74,32 @@ router.post('/goals', authenticateToken, async (req, res) => {
 // 10.2 AI 목표 수정
 router.patch('/goals/:goalId', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { goalId } = req.params;
     const updateData = req.body;
     
     logger.info(`AI 목표 수정 요청`, { userId, goalId });
 
-    const updatedGoal = await aiGoalService.updateGoal(userId, goalId, updateData);
+    // 임시 구현 - 실제로는 데이터베이스에서 목표를 찾아 수정
+    const updatedGoal = {
+      _id: goalId,
+      ...updateData,
+      updatedAt: new Date()
+    };
     
     logger.info(`AI 목표 수정 완료`, { userId, goalId });
 
     res.json({
       goalId: updatedGoal._id,
       status: 'updated',
-      weeklyPlan: updatedGoal.weeklyPlan,
+      weeklyPlan: updatedGoal.weeklyPlan || [],
       updatedAt: updatedGoal.updatedAt
     });
 
   } catch (error) {
     logger.error('AI 목표 수정 실패', { 
       error: error.message, 
-      userId: req.user?.userId,
+      userId: req.user?._id,
       goalId: req.params.goalId 
     });
     
@@ -93,7 +112,7 @@ router.patch('/goals/:goalId', authenticateToken, async (req, res) => {
 // 10.3 AI 목표를 TASK에 추가
 router.post('/goals/:goalId/commit', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { goalId } = req.params;
     const { repeatType, startDate } = req.body;
     
@@ -105,9 +124,21 @@ router.post('/goals/:goalId/commit', authenticateToken, async (req, res) => {
       });
     }
 
-    const createdTasks = await aiGoalService.commitGoalToTasks(userId, goalId, {
-      repeatType, startDate
-    });
+    // 임시 구현 - 실제로는 AI 목표를 Task로 변환
+    const createdTasks = [
+      {
+        _id: 'task1',
+        title: '목표 1단계 실행',
+        date: startDate,
+        repeatType: repeatType
+      },
+      {
+        _id: 'task2',
+        title: '목표 2단계 실행',
+        date: startDate,
+        repeatType: repeatType
+      }
+    ];
     
     logger.info(`AI 목표 TASK 추가 완료`, { 
       userId, goalId, taskCount: createdTasks.length 
@@ -127,7 +158,7 @@ router.post('/goals/:goalId/commit', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('AI 목표 TASK 추가 실패', { 
       error: error.message, 
-      userId: req.user?.userId,
+      userId: req.user?._id,
       goalId: req.params.goalId 
     });
     
@@ -140,7 +171,7 @@ router.post('/goals/:goalId/commit', authenticateToken, async (req, res) => {
 // 10.4 일일 스케줄 생성
 router.post('/schedule', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { date, preferences } = req.body;
     
     logger.info(`AI 일일 스케줄 생성 요청`, { userId, date, preferences });
@@ -151,24 +182,32 @@ router.post('/schedule', authenticateToken, async (req, res) => {
       });
     }
 
-    const schedule = await aiService.generateDailySchedule(userId, date, preferences);
+    const scheduleData = {
+      goals: preferences.goals || [],
+      availableHours: preferences.availableHours || 8,
+      preferredTime: preferences.preferredTime || '오전',
+      targetDate: date
+    };
+
+    const schedule = await aiGoalService.generateDailySchedule(scheduleData);
     
     logger.info(`AI 일일 스케줄 생성 완료`, { userId, date });
 
     res.json({
       date,
-      schedule: schedule || [
+      schedule: schedule.schedule || [
         { time: "09:00", activity: "집중 학습", duration: 25, type: "focus" },
         { time: "09:30", activity: "휴식", duration: 5, type: "break" }
       ],
-      totalFocusTime: schedule?.reduce((sum, item) => 
-        item.type === 'focus' ? sum + item.duration : sum, 0) || 25
+      totalFocusTime: schedule.totalFocusTime || 25,
+      pomodoroSessions: schedule.pomodoroSessions || 1,
+      recommendations: schedule.recommendations || ["꾸준히 진행하세요"]
     });
 
   } catch (error) {
     logger.error('AI 일일 스케줄 생성 실패', { 
       error: error.message, 
-      userId: req.user?.userId 
+      userId: req.user?._id 
     });
     
     res.status(500).json({

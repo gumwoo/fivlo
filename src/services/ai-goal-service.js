@@ -84,6 +84,12 @@ class AIGoalService {
    */
   async callOpenAI(systemPrompt, userMessage, temperature = 0.7) {
     try {
+      // OpenAI API 키가 없거나 할당량 초과 시 폴백 처리
+      if (!process.env.OPENAI_API_KEY) {
+        logger.warn('OpenAI API 키가 설정되지 않아 폴백 응답을 사용합니다');
+        return this.generateFallbackResponse(userMessage);
+      }
+
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4',
         messages: [
@@ -99,8 +105,75 @@ class AIGoalService {
       
     } catch (error) {
       logger.error('OpenAI API 호출 실패:', error);
+      
+      // API 할당량 초과나 기타 오류 시 폴백 응답 사용
+      if (error.status === 429 || error.status === 401 || error.status === 402) {
+        logger.warn('OpenAI API 할당량 초과 또는 인증 오류, 폴백 응답을 사용합니다');
+        return this.generateFallbackResponse(userMessage);
+      }
+      
       throw new Error('AI 서비스 요청에 실패했습니다');
     }
+  }
+
+  /**
+   * OpenAI API 실패 시 폴백 응답 생성
+   */
+  generateFallbackResponse(userMessage) {
+    // 목표에서 키워드 추출
+    const goalMatch = userMessage.match(/목표:\s*(.+)/);
+    const goal = goalMatch ? goalMatch[1].trim() : '목표 달성';
+    
+    // 기간에서 키워드 추출
+    const periodMatch = userMessage.match(/달성 기간:\s*(.+)/);
+    const period = periodMatch ? periodMatch[1].trim() : '3개월';
+    
+    return {
+      analysis: `"${goal}"은(는) 체계적인 계획과 꾸준한 실행이 중요한 목표입니다. 포모도로 기법을 활용하여 단계별로 접근하면 효과적으로 달성할 수 있습니다.`,
+      timeline: period,
+      difficulty: "medium",
+      tasks: [
+        {
+          title: "기초 학습 계획 수립",
+          description: "현재 수준 파악 및 학습 계획 세우기",
+          estimatedTime: "1주",
+          priority: "high",
+          category: "study",
+          week: 1
+        },
+        {
+          title: "일일 학습 루틴 시작",
+          description: "매일 25분씩 집중 학습 시간 확보",
+          estimatedTime: "25분/일",
+          priority: "high", 
+          category: "study",
+          week: 1
+        },
+        {
+          title: "주간 진도 점검",
+          description: "일주일마다 학습 진도 확인 및 조정",
+          estimatedTime: "30분/주",
+          priority: "medium",
+          category: "study",
+          week: 2
+        },
+        {
+          title: "모의 테스트 실시",
+          description: "실전 감각 익히기 위한 모의 테스트",
+          estimatedTime: "2시간/회",
+          priority: "high",
+          category: "study", 
+          week: 4
+        }
+      ],
+      tips: [
+        "포모도로 기법(25분 집중 + 5분 휴식)을 활용하세요",
+        "매일 일정한 시간에 학습하여 습관을 만드세요",
+        "목표를 작은 단위로 나누어 성취감을 느끼세요",
+        "진행 상황을 기록하여 동기부여를 유지하세요"
+      ],
+      motivation: "🌟 오분이가 응원해요! 작은 실행이 큰 성과를 만듭니다. 매일 25분씩이라도 꾸준히 해보세요!"
+    };
   }
 
   /**
@@ -155,10 +228,16 @@ class AIGoalService {
 
 오늘 하루 최적의 스케줄을 포모도로 기법에 맞춰 추천해주세요.`;
 
-      const result = await this.callOpenAI(
-        this.systemPrompts.dailySchedule,
-        userMessage
-      );
+      let result;
+      try {
+        result = await this.callOpenAI(
+          this.systemPrompts.dailySchedule,
+          userMessage
+        );
+      } catch (error) {
+        // OpenAI 실패 시 기본 스케줄 제공
+        result = this.generateFallbackSchedule(scheduleData);
+      }
 
       result.generatedAt = new Date();
       result.targetDate = scheduleData.targetDate || new Date();
@@ -171,6 +250,60 @@ class AIGoalService {
       logger.error('일일 스케줄 생성 실패:', error);
       throw error;
     }
+  }
+
+  /**
+   * 기본 일일 스케줄 생성 (폴백)
+   */
+  generateFallbackSchedule(scheduleData) {
+    const availableHours = scheduleData.availableHours || 8;
+    const pomodoroSessions = Math.min(Math.floor(availableHours * 2), 8); // 최대 8세션
+    
+    const schedule = [];
+    let startHour = scheduleData.preferredTime === '오후' ? 14 : 9;
+    
+    for (let i = 0; i < pomodoroSessions; i++) {
+      const hour = startHour + Math.floor(i * 0.5);
+      const minute = (i % 2) * 30;
+      
+      schedule.push({
+        time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+        activity: i % 4 === 0 ? "집중 학습" : i % 4 === 1 ? "실습 및 복습" : i % 4 === 2 ? "문제 풀이" : "정리 및 점검",
+        duration: 25,
+        type: "focus",
+        description: "포모도로 기법으로 집중하여 진행"
+      });
+      
+      // 휴식 시간 추가 (4세션마다 긴 휴식)
+      if ((i + 1) % 4 === 0) {
+        schedule.push({
+          time: `${hour.toString().padStart(2, '0')}:${(minute + 25).toString().padStart(2, '0')}`,
+          activity: "긴 휴식",
+          duration: 30,
+          type: "break",
+          description: "충분한 휴식으로 재충전"
+        });
+      } else {
+        schedule.push({
+          time: `${hour.toString().padStart(2, '0')}:${(minute + 25).toString().padStart(2, '0')}`,
+          activity: "짧은 휴식",
+          duration: 5,
+          type: "break", 
+          description: "잠깐 쉬어가기"
+        });
+      }
+    }
+    
+    return {
+      schedule,
+      pomodoroSessions,
+      totalFocusTime: pomodoroSessions * 25,
+      recommendations: [
+        "25분 집중 + 5분 휴식을 꾸준히 지켜주세요",
+        "4세션마다 15-30분 긴 휴식을 취하세요",
+        "집중이 어려우면 환경을 점검해보세요"
+      ]
+    };
   }
 
   /**

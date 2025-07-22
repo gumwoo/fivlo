@@ -258,6 +258,26 @@ class AIService {
   }
 
   /**
+   * 집중 인사이트 생성 (analytics에서 호출)
+   */
+  async generateFocusInsights(userId) {
+    try {
+      // 임시 구현 - 기본 인사이트 반환
+      return [
+        "규칙적인 포모도로 세션으로 집중력이 향상되고 있어요",
+        "오전 시간대에 집중이 잘 되는 패턴을 보여요",
+        "목표별 시간 분배를 통해 효율성을 높일 수 있을 것 같아요"
+      ];
+    } catch (error) {
+      logger.error(`집중 인사이트 생성 실패: ${error.message}`, { userId });
+      return [
+        "더 많은 데이터가 쌓이면 맞춤 분석을 제공해드려요",
+        "꾸준한 집중 습관을 만들어보세요"
+      ];
+    }
+  }
+
+  /**
    * 서비스 상태 확인
    */
   getServiceStatus() {

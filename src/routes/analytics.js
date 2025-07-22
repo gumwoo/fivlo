@@ -43,7 +43,7 @@ const logger = require('../utils/logger');
  */
 router.get('/daily', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const date = req.query.date || new Date().toISOString().split('T')[0];
     
     logger.info(`일간 집중도 분석 조회 요청`, { userId, date });
@@ -96,7 +96,7 @@ router.get('/daily', authenticateToken, async (req, res) => {
  */
 router.get('/weekly', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const week = req.query.week || getCurrentWeek();
     
     logger.info(`주간 집중도 분석 조회 요청`, { userId, week });
@@ -142,15 +142,40 @@ router.get('/weekly', authenticateToken, async (req, res) => {
  *         schema:
  *           type: string
  *         example: "2024-07"
- *         description: 분석할 월 (기본값은 이번 달)
+ *         description: 분석할 월 (YYYY-MM 형태, 기본값은 이번 달)
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: string
+ *         example: "2025"
+ *         description: 분석할 년도 (month 파라미터와 함께 사용)
+ *       - in: query
+ *         name: month
+ *         schema:
+ *           type: string
+ *         example: "7"
+ *         description: 분석할 월 (1-12, year 파라미터와 함께 사용)
  *     responses:
  *       200:
  *         description: 월간 분석 조회 성공
  */
 router.get('/monthly', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
-    const month = req.query.month || getCurrentMonth();
+    const userId = req.user._id;
+    
+    // 두 가지 파라미터 형태 지원
+    // 1. month="2025-07" 형태
+    // 2. year=2025&month=7 형태
+    let month;
+    if (req.query.month && !req.query.year) {
+      month = req.query.month;
+    } else if (req.query.year && req.query.month) {
+      const yearStr = req.query.year;
+      const monthStr = String(req.query.month).padStart(2, '0');
+      month = `${yearStr}-${monthStr}`;
+    } else {
+      month = getCurrentMonth();
+    }
     
     logger.info(`월간 집중도 분석 조회 요청`, { userId, month });
 
@@ -168,7 +193,8 @@ router.get('/monthly', authenticateToken, async (req, res) => {
     logger.error('월간 집중도 분석 조회 실패', { 
       error: error.message, 
       userId: req.user?.userId,
-      month: req.query.month 
+      month: req.query.month,
+      year: req.query.year
     });
     
     res.status(500).json({
@@ -197,7 +223,7 @@ router.get('/monthly', authenticateToken, async (req, res) => {
  */
 router.get('/dday', authenticateToken, premiumMiddleware, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     
     logger.info(`D-Day 목표 조회 요청`, { userId });
 
@@ -256,7 +282,7 @@ router.get('/dday', authenticateToken, premiumMiddleware, async (req, res) => {
  */
 router.post('/dday', authenticateToken, premiumMiddleware, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { goal, targetDate, dailyTarget } = req.body;
     
     logger.info(`D-Day 목표 생성 요청`, { userId, goal, targetDate, dailyTarget });
@@ -330,7 +356,7 @@ router.post('/dday', authenticateToken, premiumMiddleware, async (req, res) => {
  */
 router.get('/sessions', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     const { date, limit = 50 } = req.query;
     
     logger.info(`원본 세션 로그 조회 요청`, { userId, date, limit });
@@ -374,7 +400,7 @@ router.get('/sessions', authenticateToken, async (req, res) => {
  */
 router.get('/insights', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user._id;
     
     logger.info(`AI 루틴 제안 조회 요청`, { userId });
 
